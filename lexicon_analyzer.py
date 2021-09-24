@@ -61,17 +61,24 @@ class Symbol:
 
 #symbol atributos tipo scope (valor)
 #métodos inserção (adicionar direto no dicionário) e busca (procurar no dicionário)
-class Token(object):
-    def __init__(self, type, value):
-        self.type = type
-        self.value = value
+# class Token(object):
+#     def __init__(self, type, value):
+#         self.type = type
+#         self.value = value
 
-  #representação em string da classe
-    def __str__(self):
-        return "Token({type}, {value})".format(type = self.type, value = repr(self.value))
+#   #representação em string da classe
+#     def __str__(self):
+#         return "Token({type}, {value})".format(type = self.type, value = repr(self.value))
 
-    def __repr__(self):
-        return self.__str__()
+#     def __repr__(self):
+#         return self.__str__()
+from typing import NamedTuple
+
+class Token(NamedTuple):
+    type: str
+    value: str
+    line: int
+    column: int
 
 class SymbolTable:
     def __init__(self):
@@ -143,10 +150,13 @@ def token_generator(code):
         ]
 
     tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
+    token_regex = re.compile(tok_regex)
     line_num = 1
     line_start = 0
-    print(tok_regex)
-    for mo in re.finditer(re.escape(tok_regex), code):
+    print(token_regex)
+    iterable = re.finditer(token_regex, code) 
+    print(iterable)
+    for mo in iterable:
         kind = mo.lastgroup
         value = mo.group()
         column = mo.start() - line_start
