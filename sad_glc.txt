@@ -1,0 +1,59 @@
+type_specifier
+	: INTEGRITY
+	| BREAKDOWN
+	| LETTER
+	| STRING
+
+identifier
+	: id
+
+declaration
+	: type_specifier identifier "\n"
+	| (empty)
+
+subprogram_declaration
+	| subprogram_head declaration optional_statements
+
+subprogram_head
+	: "function" identifier arguments "\n"
+
+arguments
+	: "(" parameter_list ")"
+
+parameter_list
+	: type_specifier identifier
+	| parameter_list "," type_specifier identifier
+
+optional_statements
+	: statement_list
+	| (empty)
+
+statement_list
+	: statement
+	| statement_list "\n" statement
+
+statement
+	: variable "=" expression
+	| "if" expression "than" statement "else" statement
+	| "while" expression "do" statement
+
+variable
+	: identifier
+
+expression
+	: simple_expression
+	| simple_expression {comparisson} simple_expression
+
+simple_expression
+	: term
+	| simple_expression "-" term
+	| simple_expression "+" term
+
+term
+	: factor
+	| term "*" factor
+	| term "/" factor
+
+factor
+	: identifier
+	| type_specifier
