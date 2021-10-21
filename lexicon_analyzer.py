@@ -163,7 +163,7 @@ class Interpreter(object):
 
     def factor(self):
         token = self.current_token
-        self.eat('INTEGER')
+        self.eat(token.type)
         return int(token.value)
 
     def term(self):
@@ -180,9 +180,9 @@ class Interpreter(object):
         
         return result
 
-    def expression(self):
+    def simple_expression(self):
 
-        result = self.factor()
+        result = self.term()
 
         while self.current_token.type in ('PLUS', 'MINUS'):
             token = self.current_token
@@ -200,7 +200,7 @@ def main():
 
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.expression()
+    result = interpreter.simple_expression()
     print(result)
 
 if __name__ == '__main__':
