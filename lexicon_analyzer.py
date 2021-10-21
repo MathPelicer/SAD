@@ -110,11 +110,15 @@ class LexiconAnalayzer(object):
                 ('MINUS',    r'-'),           # minus op -
                 ('MULTI',    r'\*'),          # multiplication op *
                 ('DIV',      r'/'),           # divising op /
+                ('EQUALS',   r'=='),
+                ('DIFF',     r'!='),
                 ('ASSIGN',   r'='),           # Assignment operator
                 ('ENDLINE',  r'\n'),          # endline
                 #('COMMENT',  r''),           # comment
                 ('SKIP',     r'[ \t]+'),      # skip char for spaces and tabs
                 ('MISMATCH', r'\.'),          # Any other character
+                
+                # add greater and less then things
             ]
 
         tok_regex = '|'.join('(?P<%s>%s)' % pair for pair in token_specification)
@@ -194,13 +198,28 @@ class Interpreter(object):
                 result = result - self.factor()
         
         return result
+    
+    def expression(self):
+
+        result = self.simple_expression()
+
+        while self.current_token.type in ('EQUALS', 'DIFF'):
+            token = self.current_token
+            if token.type == 'EQUALS':
+                self.eat('EQUALS')
+                result = result == self.simple_expression()
+            elif token.type == 'DIFF':
+                self.eat('DIFF')
+                result = result != self.simple_expression()
+        
+        return result
 
 def main():
     statement = input('calc -> ')
 
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.simple_expression()
+    result = interpreter.expression()
     print(result)
 
 if __name__ == '__main__':
