@@ -142,13 +142,66 @@ class LexiconAnalayzer(object):
                 raise RuntimeError(f'{value!r} unexpected on line {line_num}')
             yield Token(kind, value, line_num, column)
 
+class Interpreter(object):
+    def __init__(self, lexer):
+        self.lexer = lexer
+        self.token_generator = self.lexer.token_generator()
+        self.current_token = next(self.token_generator)
 
+    def error(self):
+        raise Exception('Invalid syntax')
 
-statement = """
-    x = 10 + 2
-"""
+    def eat(self, token_type):
 
-analyser = LexiconAnalayzer(statement)
+        if self.current_token.type == token_type:
+            try:
+                self.current_token = next(self.token_generator)
+            except StopIteration:
+                print("")
+        else:
+            self.error()
 
-for token in analyser.token_generator():
-    print(token)
+    def factor(self):
+        token = self.current_token
+        self.eat('INTEGER')
+        return int(token.value)
+
+    def term(self):
+        result = self.factor()
+
+        while self.current_token.type in ('MULTI', 'DIV'):
+            token = self.current_token
+            if token.type == 'MULTI':
+                self.eat('MULTI')
+                result = result * self.factor()
+            elif token.type == 'DIV':
+                self.eat('DIV')
+                result = result / self.factor()
+        
+        return result
+
+    def expression(self):
+
+        result = self.factor()
+
+        while self.current_token.type in ('PLUS', 'MINUS'):
+            token = self.current_token
+            if token.type == 'PLUS':
+                self.eat('PLUS')
+                result = result + self.factor()
+            elif token.type == 'MINUS':
+                self.eat('MINUS')
+                result = result - self.factor()
+        
+        return result
+
+def main():
+    statement = input('calc -> ')
+
+    analyser = LexiconAnalayzer(statement)
+    interpreter = Interpreter(analyser)
+    result = interpreter.expression()
+    print(result)
+
+if __name__ == '__main__':
+    main()
