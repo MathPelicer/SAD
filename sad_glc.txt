@@ -21,9 +21,19 @@ subprogram_head
 arguments
 	: "(" parameter_list ")"
 
+##################################################
+decidir como vai ficar parameter_list
+##################################################
+
+parameter_list
+	: identifier
+	| parameter_list "," identifier
+
 parameter_list
 	: type_specifier identifier
 	| parameter_list "," type_specifier identifier
+	
+##################################################
 
 optional_statements
 	: statement_list
@@ -35,11 +45,13 @@ statement_list
 
 statement
 	: variable "=" expression
-	| "if" expression "than" statement "else" statement
-	| "while" expression "do" statement
+	
+	# possivelmente statements vao virar statement_lists
 
-variable
-	: identifier
+	| "if" expression "{" statement "}" 
+	| "if" expression "{" statement "}" "elif" "{" statement "}"
+	| "if" expression "{" statement "}" "elif" "{" statement "}" "else" "{" statement "}"
+	| "while" expression "{" statement "}"
 
 expression
 	: simple_expression

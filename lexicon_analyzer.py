@@ -102,6 +102,7 @@ class LexiconAnalayzer(object):
                 ('HAPPY',    r'happy'),       # switch
                 ('TREE',     r'tree'),        # case
                 ('ACCIDENT', r'accident'),    # default
+                ('COMMA',    r','),
                 ('OPEN_B',   r'{'),
                 ('CLOSE_B',  r'}'),
                 ('INTEGER',  r'\d+'),         # int number
@@ -173,6 +174,13 @@ class Interpreter(object):
         else:
             self.error()
 
+    def identifier(self):
+        token = self.current_token
+        self.eat(token.type)
+
+        if token.type == 'ID':
+            return self.current_token
+
     def factor(self):
         token = self.current_token
         self.eat(token.type)
@@ -189,106 +197,156 @@ class Interpreter(object):
             return bool(token.value)
 
     def term(self):
-        result = self.factor()
+        term_result = self.factor()
 
         while self.current_token.type in ('MULTI', 'DIV'):
             token = self.current_token
             if token.type == 'MULTI':
                 self.eat('MULTI')
-                result = result * self.factor()
+                self.factor()
             elif token.type == 'DIV':
                 self.eat('DIV')
-                result = result / self.factor()
+                self.factor()
         
-        return result
+        return term_result
 
     def simple_expression(self):
 
-        result = self.term()
+        simple_expression_result = self.term()
 
         while self.current_token.type in ('PLUS', 'MINUS'):
             token = self.current_token
             if token.type == 'PLUS':
                 self.eat('PLUS')
-                result = result + self.factor()
+                self.factor()
             elif token.type == 'MINUS':
                 self.eat('MINUS')
-                result = result - self.factor()
+                self.factor()
         
-        return result
+        return simple_expression_result
     
     def expression(self):
 
-        result = self.simple_expression()
+        expression_result = self.simple_expression()
 
         while self.current_token.type in ('EQUALS', 'DIFF', 'GREATER', 'LESS', 'GTR_THAN', 'LESS_THAN'):
-            token = self.current_token
-            if token.type == 'EQUALS':
+            if self.current_token.type == 'EQUALS':
                 self.eat('EQUALS')
-                
                 # ISSO SIM SINTATICO SEM EXECUÇÃO
-
                 self.simple_expression()
-                # cria variavel tipo CAMUS
-            elif token.type == 'DIFF':
+            elif self.current_token.type == 'DIFF':
                 self.eat('DIFF')
-                result = result != self.simple_expression()
-                # cria variavel tipo CAMUS
-            elif token.type == 'GREATER':
+                self.simple_expression()
+            elif self.current_token.type == 'GREATER':
                 self.eat('GREATER')
-                result = result > self.simple_expression()
-                # cria variavel tipo CAMUS
-            elif token.type == 'LESS':
+                self.simple_expression()
+            elif self.current_token.type == 'LESS':
                 self.eat('LESS')
-                result = result < self.simple_expression()
-                # cria variavel tipo CAMUS
-            elif token.type == 'GTR_THAN':
+                self.simple_expression()
+            elif self.current_token.type == 'GTR_THAN':
                 self.eat('GTR_THAN')
-                result = result >= self.simple_expression()
-                # cria variavel tipo CAMUS
-            elif token.type == 'LESS_THAN':
+                self.simple_expression()
+            elif self.current_token.type == 'LESS_THAN':
                 self.eat('LESS_THAN')
-                result = result <= self.simple_expression()
-                # cria variavel tipo CAMUS
+                self.simple_expression()
+            else:
+                return 'invalid'
         
-        return result
-
-    def variable(self):
-        result = ""
-        return result
+        return expression_result
 
     def statement(self):
-        result = self.variable()
+        while self.current_token.type in ('ID', 'WHAT', 'EVERWHAT', 'EVER', 'LIFE'):
 
-        while self.current_token.type in ('WHAT', 'EVERWHAT', 'EVER', 'LIFE'):
-            token = self.current_token
-            if token.type == 'WHAT':
+            if self.current_token.type == 'ID':
+                self.identifier()
+                if self.current_token.type == 'ASSIGN':
+                    self.eat('ASSIGN')
+                    self.expression()
+                    if self.current_token.type == 'ID':
+                        return 'invalid'    
+                else:
+                    return 'invalid'
+
+            if self.current_token.type == 'WHAT':
                 self.eat('WHAT')
-                result = result + self.expression()
-                if token.type == 'EVERWHAT':
-                    self.eat('EVERWHAT')
-                    result = result + self.statement()
-                elif token.type == 'EVER':
-                    self.eat('EVER')
-                    result = result + self.statement()
-            
-            if token.type == 'LIFE':
-                self.eat('LIFE')
-                result = result + self.expression()
-                if token.type == 'OPEN_B':
+                self.expression()
+                if self.current_token.type == 'OPEN_B':
                     self.eat('OPEN_B')
-                    result = result + self.statement()
-                    # if token.type == 'CLOSE_B':
-                    #     self.eat('CLOSE_B')
+                    self.statement()
+                    if self.current_token.type == 'CLOSE_B':
+                        self.eat('CLOSE_B')
+                    else:
+                        return "invalid"
+                if self.current_token.type == 'EVERWHAT':
+                    self.eat('EVERWHAT')
+                    self.expression()
+                    if self.current_token.type == 'OPEN_B':
+                        self.eat('OPEN_B')
+                        self.statement()
+                        if self.current_token.type == 'CLOSE_B':
+                            self.eat('CLOSE_B')
+                        else:
+                            return "invalid"
+                elif self.current_token.type == 'EVER':
+                    self.eat('EVER')
+                    if self.current_token.type == 'OPEN_B':
+                        self.eat('OPEN_B')
+                        self.statement()
+                        if self.current_token.type == 'CLOSE_B':
+                            self.eat('CLOSE_B')
+                        else:
+                            return "invalid"
+            
+            if self.current_token.type == 'LIFE':
+                self.eat('LIFE')
+                self.expression()
+                if self.current_token.type == 'OPEN_B':
+                    self.eat('OPEN_B')
+                    self.statement()
+                    if self.current_token.type == 'CLOSE_B':
+                        self.eat('CLOSE_B')
+                    else:
+                        return 'invalid'
                 
-        return result
+        print('valid')
+
+    def statement_list(self):
+        statement_list_result = self.statement()
+
+        while self.current_token.type in ('ENDLINE'):
+            if self.current_token.type == 'ENDLINE':
+                self.eat('ENDLINE')
+                self.statement()
+            else:
+                return 'invalid'
+
+        return statement_list_result
+
+    # nao sei exatamente como funciona retornar nada
+    def optional_statements(self):
+        statement_list_result = self.statement_list()
+
+        return statement_list_result
+
+    def parameter_list(self):
+        while self.current_token.type in ('ID', 'COMMA'):
+            if self.current_token.type == 'ID':
+                self.identifier()
+                if self.current_token.type == 'COMMA':
+                    self.eat('COMMA')
+                    self.parameter_list()
+                else:
+                    return 'valid'
+        
+        return 'valid'
+            
 
 def main():
     statement = input('calc -> ')
 
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.statement()
+    result = interpreter.parameter_list()
     print(result)
 
 if __name__ == '__main__':
