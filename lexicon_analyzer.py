@@ -13,11 +13,14 @@
 
 #for: breath
 #while: life
+#do: survive
 #break: choke
 
 #int: integrity [0 - 9]+
 #float: breakdown [0 - 9]+ "." [0 - 9]+
 #char: letter [a - z]+
+
+#camus: true = suicide | false = coffee
 
 #String: "" || ''
 
@@ -65,8 +68,6 @@ from typing import NamedTuple
 class Token(NamedTuple):
     type: str
     value: str
-    line: int
-    column: int
 
 # class SymbolTable:
 #     def __init__(self):
@@ -101,7 +102,10 @@ class LexiconAnalayzer(object):
                 ('HAPPY',    r'happy'),       # switch
                 ('TREE',     r'tree'),        # case
                 ('ACCIDENT', r'accident'),    # default
-                ('INTEGER',   r'\d+'),        # int number
+                ('OPEN_B',   r'{'),
+                ('CLOSE_B',  r'}'),
+                ('INTEGER',  r'\d+'),         # int number
+                ('CAMUS',    r'coffee|suicide'), #true / false
                 ('FLOAT',    r'\d+(\.\d*)?'), # float number
                 ('STRING',   r'\"[a-z]+\"'),  # string always using double quotes
                 ('CHAR',     r'\'[a-z]+\''),  # char always using sigle quotes
@@ -110,8 +114,12 @@ class LexiconAnalayzer(object):
                 ('MINUS',    r'-'),           # minus op -
                 ('MULTI',    r'\*'),          # multiplication op *
                 ('DIV',      r'/'),           # divising op /
-                ('EQUALS',   r'=='),
-                ('DIFF',     r'!='),
+                ('EQUALS',   r'=='),          # equals to
+                ('DIFF',     r'!='),          # different then
+                ('GTR_THAN', r'>='),
+                ('LESS_THAN',r'<='),
+                ('GREATER',  r'>'),
+                ('LESS',     r'<'),
                 ('ASSIGN',   r'='),           # Assignment operator
                 ('ENDLINE',  r'\n'),          # endline
                 #('COMMENT',  r''),           # comment
@@ -144,7 +152,7 @@ class LexiconAnalayzer(object):
                 continue
             elif kind == 'MISMATCH':
                 raise RuntimeError(f'{value!r} unexpected on line {line_num}')
-            yield Token(kind, value, line_num, column)
+            yield Token(kind, value)
 
 class Interpreter(object):
     def __init__(self, lexer):
@@ -168,7 +176,17 @@ class Interpreter(object):
     def factor(self):
         token = self.current_token
         self.eat(token.type)
-        return int(token.value)
+
+        if token.type == 'INTEGER':
+            return int(token.value)
+        elif token.type == 'BREAKDOWN':
+            return float(token.value)
+        elif token.type == 'LETTER':
+            return str(token.value) # maybe it's gonna change (char doesnt exist in python)
+        elif token.type == 'STRING':
+            return str(token.value)
+        elif token.type == 'CAMUS':
+            return bool(token.value)
 
     def term(self):
         result = self.factor()
@@ -203,15 +221,66 @@ class Interpreter(object):
 
         result = self.simple_expression()
 
-        while self.current_token.type in ('EQUALS', 'DIFF'):
+        while self.current_token.type in ('EQUALS', 'DIFF', 'GREATER', 'LESS', 'GTR_THAN', 'LESS_THAN'):
             token = self.current_token
             if token.type == 'EQUALS':
                 self.eat('EQUALS')
-                result = result == self.simple_expression()
+                
+                # ISSO SIM SINTATICO SEM EXECUÇÃO
+
+                self.simple_expression()
+                # cria variavel tipo CAMUS
             elif token.type == 'DIFF':
                 self.eat('DIFF')
                 result = result != self.simple_expression()
+                # cria variavel tipo CAMUS
+            elif token.type == 'GREATER':
+                self.eat('GREATER')
+                result = result > self.simple_expression()
+                # cria variavel tipo CAMUS
+            elif token.type == 'LESS':
+                self.eat('LESS')
+                result = result < self.simple_expression()
+                # cria variavel tipo CAMUS
+            elif token.type == 'GTR_THAN':
+                self.eat('GTR_THAN')
+                result = result >= self.simple_expression()
+                # cria variavel tipo CAMUS
+            elif token.type == 'LESS_THAN':
+                self.eat('LESS_THAN')
+                result = result <= self.simple_expression()
+                # cria variavel tipo CAMUS
         
+        return result
+
+    def variable(self):
+        result = ""
+        return result
+
+    def statement(self):
+        result = self.variable()
+
+        while self.current_token.type in ('WHAT', 'EVERWHAT', 'EVER', 'LIFE'):
+            token = self.current_token
+            if token.type == 'WHAT':
+                self.eat('WHAT')
+                result = result + self.expression()
+                if token.type == 'EVERWHAT':
+                    self.eat('EVERWHAT')
+                    result = result + self.statement()
+                elif token.type == 'EVER':
+                    self.eat('EVER')
+                    result = result + self.statement()
+            
+            if token.type == 'LIFE':
+                self.eat('LIFE')
+                result = result + self.expression()
+                if token.type == 'OPEN_B':
+                    self.eat('OPEN_B')
+                    result = result + self.statement()
+                    # if token.type == 'CLOSE_B':
+                    #     self.eat('CLOSE_B')
+                
         return result
 
 def main():
@@ -219,7 +288,7 @@ def main():
 
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.expression()
+    result = interpreter.statement()
     print(result)
 
 if __name__ == '__main__':

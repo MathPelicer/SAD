@@ -3,6 +3,7 @@ type_specifier
 	| BREAKDOWN
 	| LETTER
 	| STRING
+	| CAMUS
 
 identifier
 	: id
@@ -42,7 +43,7 @@ variable
 
 expression
 	: simple_expression
-	| simple_expression {comparisson} simple_expression
+	| simple_expression {comparison} simple_expression
 
 simple_expression
 	: term
