@@ -19,7 +19,7 @@ subprogram_head
 	: "function" identifier arguments "\n"
 
 arguments
-	: "(" parameter_list ")"
+	: "!" parameter_list "@"
 
 ##################################################
 decidir como vai ficar parameter_list
@@ -48,10 +48,11 @@ statement
 	
 	# possivelmente statements vao virar statement_lists
 
-	| "if" expression "{" statement "}" 
-	| "if" expression "{" statement "}" "elif" "{" statement "}"
-	| "if" expression "{" statement "}" "elif" "{" statement "}" "else" "{" statement "}"
-	| "while" expression "{" statement "}"
+	| "if" expression "{" statement_list "}" 
+	| "if" expression "{" statement_list "}" "elif" "{" statement_list "}"
+	| "if" expression "{" statement_list "}" "elif" "{" statement_list "}" "else" "{" statement_list "}"
+	| "while" expression "{" statement_list "}"
+	| "while" expression "{" statement_list choke"}"
 
 expression
 	: simple_expression
@@ -70,3 +71,5 @@ term
 factor
 	: identifier
 	| type_specifier
+
+

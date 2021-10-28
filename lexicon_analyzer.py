@@ -69,18 +69,8 @@ class Token(NamedTuple):
     type: str
     value: str
 
-# class SymbolTable:
-#     def __init__(self):
-#         self.elements = {}
-    
-#     def insert(self, symbol):
-#         self.elements[str(symbol.name)] = symbol
-
-#     def lookup(self, name):
-#         return self.elements[str(name)]
 
 #criar classe do Analisador Léxico
-
 class LexiconAnalayzer(object):
     def __init__(self, text):
         self.text = text
@@ -103,6 +93,8 @@ class LexiconAnalayzer(object):
                 ('TREE',     r'tree'),        # case
                 ('ACCIDENT', r'accident'),    # default
                 ('COMMA',    r','),
+                ('OPEN_P',   r'\('),
+                ('CLOSE_P',  r'\)'),
                 ('OPEN_B',   r'{'),
                 ('CLOSE_B',  r'}'),
                 ('INTEGER',  r'\d+'),         # int number
@@ -255,60 +247,94 @@ class Interpreter(object):
         return expression_result
 
     def statement(self):
+        statement_result = ""
+
         while self.current_token.type in ('ID', 'WHAT', 'EVERWHAT', 'EVER', 'LIFE'):
 
             if self.current_token.type == 'ID':
                 self.identifier()
+
                 if self.current_token.type == 'ASSIGN':
                     self.eat('ASSIGN')
                     self.expression()
+
                     if self.current_token.type == 'ID':
-                        return 'invalid'    
+                        return 'invalid'
+
                 else:
                     return 'invalid'
 
-            if self.current_token.type == 'WHAT':
+                return statement_result
+
+            elif self.current_token.type == 'WHAT':
                 self.eat('WHAT')
                 self.expression()
+
                 if self.current_token.type == 'OPEN_B':
                     self.eat('OPEN_B')
-                    self.statement()
-                    if self.current_token.type == 'CLOSE_B':
+                    statement = self.statement()
+
+                    if statement == 'invalid':
+                        return 'invalid'
+
+                    elif self.current_token.type == 'CLOSE_B':
                         self.eat('CLOSE_B')
+
                     else:
                         return "invalid"
+
                 if self.current_token.type == 'EVERWHAT':
                     self.eat('EVERWHAT')
                     self.expression()
+
                     if self.current_token.type == 'OPEN_B':
                         self.eat('OPEN_B')
-                        self.statement()
-                        if self.current_token.type == 'CLOSE_B':
+                        statement = self.statement()
+
+                        if statement == 'invalid':
+                            return 'invalid'
+
+                        elif self.current_token.type == 'CLOSE_B':
                             self.eat('CLOSE_B')
+
                         else:
                             return "invalid"
+
                 elif self.current_token.type == 'EVER':
                     self.eat('EVER')
+
                     if self.current_token.type == 'OPEN_B':
                         self.eat('OPEN_B')
-                        self.statement()
-                        if self.current_token.type == 'CLOSE_B':
+                        statement = self.statement()
+
+                        if statement == 'invalid':
+                            return 'invalid'
+
+                        elif self.current_token.type == 'CLOSE_B':
                             self.eat('CLOSE_B')
+
                         else:
                             return "invalid"
             
-            if self.current_token.type == 'LIFE':
+            elif self.current_token.type == 'LIFE':
                 self.eat('LIFE')
                 self.expression()
+
                 if self.current_token.type == 'OPEN_B':
                     self.eat('OPEN_B')
-                    self.statement()
-                    if self.current_token.type == 'CLOSE_B':
+                    statement = self.statement()
+
+                    if statement == 'invalid':
+                        return 'invalid'
+
+                    elif self.current_token.type == 'CLOSE_B':
                         self.eat('CLOSE_B')
+
                     else:
                         return 'invalid'
-                
-        print('valid')
+            
+            return 'valid'
+        return 'invalid'        
 
     def statement_list(self):
         statement_list_result = self.statement()
@@ -329,24 +355,47 @@ class Interpreter(object):
         return statement_list_result
 
     def parameter_list(self):
-        while self.current_token.type in ('ID', 'COMMA'):
+        parameter_result = ""
+
+        while self.current_token.type in ('ID'):
             if self.current_token.type == 'ID':
                 self.identifier()
                 if self.current_token.type == 'COMMA':
                     self.eat('COMMA')
-                    self.parameter_list()
+                    parameter_result = self.parameter_list()
+
+                    if parameter_result == 'invalid':
+                        return 'invalid'
                 else:
                     return 'valid'
         
-        return 'valid'
-            
+            return 'valid'
+        return 'invalid'
+
+    def arguments(self):
+        arguments_result = ""
+
+        while self.current_token.type in ('OPEN_P'):
+            if self.current_token.type == 'OPEN_P':
+                self.eat('OPEN_P')
+                arguments_result = self.parameter_list()
+                
+                if arguments_result == 'invalid':
+                    return 'invalid'
+
+                elif self.current_token.type == 'CLOSE_P':
+                    self.eat('CLOSE_P')
+                    return 'valid'
+
+                else:
+                    return 'invalid'
 
 def main():
     statement = input('calc -> ')
 
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.parameter_list()
+    result = interpreter.arguments()
     print(result)
 
 if __name__ == '__main__':
