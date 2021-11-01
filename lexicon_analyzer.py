@@ -82,16 +82,16 @@ class LexiconAnalayzer(object):
         
         keywords = {'death', 'breath', 'life', 'choke', 'what', 'everwhat', 'ever', 'happy', 'tree', 'accident'}
         token_specification = [
-                ('DEATH',    r'death'),       # function declaration
-                ('BREATH',   r'breath'),      # for
+                #('DEATH',    r'death'),       # function declaration
+                #('BREATH',   r'breath'),      # for
                 ('LIFE',     r'life'),        # while
                 ('CHOKE',    r'choke'),       # break
                 ('WHAT',     r'what'),        # if
                 ('EVERWHAT', r'everwhat'),    # elif
                 ('EVER',     r'ever'),        # else
-                ('HAPPY',    r'happy'),       # switch
-                ('TREE',     r'tree'),        # case
-                ('ACCIDENT', r'accident'),    # default
+                #('HAPPY',    r'happy'),       # switch
+                #('TREE',     r'tree'),        # case
+                #('ACCIDENT', r'accident'),    # default
                 ('COMMA',    r','),
                 ('OPEN_P',   r'\('),
                 ('CLOSE_P',  r'\)'),
@@ -100,7 +100,7 @@ class LexiconAnalayzer(object):
                 ('INTEGER',  r'\d+'),         # int number
                 ('CAMUS',    r'coffee|suicide'), #true / false
                 ('FLOAT',    r'\d+(\.\d*)?'), # float number
-                ('STRING',   r'\"[a-z]+\"'),  # string always using double quotes
+                ('STRING',   r'\"[a-z ]+\"'),  # string always using double quotes
                 ('CHAR',     r'\'[a-z]+\''),  # char always using sigle quotes
                 ('ID',       r'[A-Za-z]+'),   # Identifiers
                 ('PLUS',     r'\+'),          # plus op +
@@ -175,18 +175,26 @@ class Interpreter(object):
 
     def factor(self):
         token = self.current_token
-        self.eat(token.type)
-
+        
         if token.type == 'INTEGER':
+            self.eat(token.type)
             return int(token.value)
         elif token.type == 'BREAKDOWN':
+            self.eat(token.type)
             return float(token.value)
         elif token.type == 'LETTER':
+            self.eat(token.type)
             return str(token.value) # maybe it's gonna change (char doesnt exist in python)
         elif token.type == 'STRING':
+            self.eat(token.type)
             return str(token.value)
         elif token.type == 'CAMUS':
+            self.eat(token.type)
             return bool(token.value)
+        elif token.type == 'ID':
+            return self.identifier()
+        else:
+            return 'invalid'
 
     def term(self):
         term_result = self.factor()
@@ -249,14 +257,17 @@ class Interpreter(object):
     def statement(self):
         statement_result = ""
 
-        while self.current_token.type in ('ID', 'WHAT', 'EVERWHAT', 'EVER', 'LIFE'):
+        while self.current_token.type in ('ID', 'WHAT', 'EVERWHAT', 'EVER', 'LIFE', 'ENDLINE'):
 
             if self.current_token.type == 'ID':
                 self.identifier()
 
                 if self.current_token.type == 'ASSIGN':
                     self.eat('ASSIGN')
-                    self.expression()
+                    expression_result = self.expression()
+
+                    if expression_result == 'invalid':
+                        return 'invalid'
 
                     if self.current_token.type == 'ID':
                         return 'invalid'
@@ -270,11 +281,17 @@ class Interpreter(object):
                 self.eat('WHAT')
                 self.expression()
 
-                if self.current_token.type == 'OPEN_B':
-                    self.eat('OPEN_B')
-                    statement = self.statement()
+                if self.current_token.type == 'ENDLINE':
+                    self.eat('ENDLINE')
 
-                    if statement == 'invalid':
+                elif self.current_token.type == 'OPEN_B':
+                    self.eat('OPEN_B')
+                    statement = self.statement_list()
+
+                    if self.current_token.type == 'ENDLINE':
+                        self.eat('ENDLINE')
+
+                    elif statement == 'invalid':
                         return 'invalid'
 
                     elif self.current_token.type == 'CLOSE_B':
@@ -283,58 +300,92 @@ class Interpreter(object):
                     else:
                         return "invalid"
 
-                if self.current_token.type == 'EVERWHAT':
-                    self.eat('EVERWHAT')
-                    self.expression()
+                    if self.current_token.type == 'EVERWHAT':
+                        self.eat('EVERWHAT')
+                        self.expression()
 
-                    if self.current_token.type == 'OPEN_B':
-                        self.eat('OPEN_B')
-                        statement = self.statement()
+                        if self.current_token.type == 'ENDLINE':
+                            self.eat('ENDLINE')
 
-                        if statement == 'invalid':
-                            return 'invalid'
+                        elif self.current_token.type == 'OPEN_B':
+                            self.eat('OPEN_B')
 
-                        elif self.current_token.type == 'CLOSE_B':
-                            self.eat('CLOSE_B')
+                            if self.current_token.type == 'ENDLINE':
+                                self.eat('ENDLINE')
 
-                        else:
-                            return "invalid"
+                            statement = self.statement_list()
 
-                elif self.current_token.type == 'EVER':
-                    self.eat('EVER')
+                            if statement == 'invalid':
+                                return 'invalid'
 
-                    if self.current_token.type == 'OPEN_B':
-                        self.eat('OPEN_B')
-                        statement = self.statement()
+                            elif self.current_token.type == 'CLOSE_B':
+                                self.eat('CLOSE_B')
 
-                        if statement == 'invalid':
-                            return 'invalid'
+                            else:
+                                return "invalid"
+                    
+                    elif self.current_token.type == 'ENDLINE':
+                            self.eat('ENDLINE')
 
-                        elif self.current_token.type == 'CLOSE_B':
-                            self.eat('CLOSE_B')
+                    if self.current_token.type == 'EVER':
+                        self.eat('EVER')
 
-                        else:
-                            return "invalid"
-            
+                        if self.current_token.type == 'ENDLINE':
+                            self.eat('ENDLINE')
+
+                        elif self.current_token.type == 'OPEN_B':
+                            self.eat('OPEN_B')
+                            statement = self.statement_list()
+
+                            if self.current_token.type == 'ENDLINE':
+                                self.eat('ENDLINE')
+
+                            elif statement == 'invalid':
+                                return 'invalid'
+
+                            elif self.current_token.type == 'CLOSE_B':
+                                self.eat('CLOSE_B')
+
+                            else:
+                                return "invalid"
+
+                else:
+                    return 'invalid'
+
             elif self.current_token.type == 'LIFE':
                 self.eat('LIFE')
                 self.expression()
 
-                if self.current_token.type == 'OPEN_B':
+                if self.current_token.type == 'ENDLINE':
+                    self.eat('ENDLINE')
+
+                elif self.current_token.type == 'OPEN_B':
                     self.eat('OPEN_B')
-                    statement = self.statement()
+                    statement = self.statement_list()
 
                     if statement == 'invalid':
                         return 'invalid'
+
+                    if self.current_token.type == 'ENDLINE':
+                        self.eat('ENDLINE')
+
+                    elif self.current_token.type == 'CHOKE':
+                        self.eat('CHOKE')
 
                     elif self.current_token.type == 'CLOSE_B':
                         self.eat('CLOSE_B')
 
                     else:
                         return 'invalid'
-            
+
+            elif statement_result == 'invalid':
+                return 'invalid'
+
+            elif self.current_token == 'ENDLINE':
+                self.eat('ENDLINE')
+
             return 'valid'
-        return 'invalid'        
+        return ''        
 
     def statement_list(self):
         statement_list_result = self.statement()
@@ -342,7 +393,9 @@ class Interpreter(object):
         while self.current_token.type in ('ENDLINE'):
             if self.current_token.type == 'ENDLINE':
                 self.eat('ENDLINE')
-                self.statement()
+                statement_result = self.statement()
+                if statement_result == 'invalid':
+                    return 'invalid' 
             else:
                 return 'invalid'
 
@@ -354,48 +407,49 @@ class Interpreter(object):
         statement_list_result = self.statement_list()
         if statement_list_result == 'invalid':
             return 'invalid'
-            
+
         return 'valid'
 
-    def parameter_list(self):
-        parameter_result = ""
+    # def parameter_list(self):
+    #     parameter_result = ""
 
-        while self.current_token.type in ('ID'):
-            if self.current_token.type == 'ID':
-                self.identifier()
-                if self.current_token.type == 'COMMA':
-                    self.eat('COMMA')
-                    parameter_result = self.parameter_list()
+    #     while self.current_token.type in ('ID'):
+    #         if self.current_token.type == 'ID':
+    #             self.identifier()
+    #             if self.current_token.type == 'COMMA':
+    #                 self.eat('COMMA')
+    #                 parameter_result = self.parameter_list()
 
-                    if parameter_result == 'invalid':
-                        return 'invalid'
-                else:
-                    return 'valid'
+    #                 if parameter_result == 'invalid':
+    #                     return 'invalid'
+    #             else:
+    #                 return 'valid'
         
-            return 'valid'
-        return 'invalid'
+    #         return 'valid'
+    #     return 'invalid'
 
-    def arguments(self):
-        arguments_result = ""
+    # def arguments(self):
+    #     arguments_result = ""
 
-        while self.current_token.type in ('OPEN_P'):
-            if self.current_token.type == 'OPEN_P':
-                self.eat('OPEN_P')
-                arguments_result = self.parameter_list()
+    #     while self.current_token.type in ('OPEN_P'):
+    #         if self.current_token.type == 'OPEN_P':
+    #             self.eat('OPEN_P')
+    #             arguments_result = self.parameter_list()
                 
-                if arguments_result == 'invalid':
-                    return 'invalid'
+    #             if arguments_result == 'invalid':
+    #                 return 'invalid'
 
-                elif self.current_token.type == 'CLOSE_P':
-                    self.eat('CLOSE_P')
-                    return 'valid'
+    #             elif self.current_token.type == 'CLOSE_P':
+    #                 self.eat('CLOSE_P')
+    #                 return 'valid'
 
-                else:
-                    return 'invalid'
+    #             else:
+    #                 return 'invalid'
 
 def readfile():
     code_file = open('code_files\\test_sad_cod.txt', 'r')
     code_string = code_file.read()
+
     print(code_string)
     return code_string
 

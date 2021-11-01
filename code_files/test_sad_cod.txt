@@ -1,1 +1,14 @@
-what x==5{ x=4 
+myHumps = 10
+yourHumps = 0
+
+what myHumps > yourHumps{
+  humpsShowdown = "my humps is better than yours"
+  x =20
+}
+ever{
+  humpsShowdown = "it was rigged my humps are better than yours"
+}
+
+life x >y {
+    x=9
+}

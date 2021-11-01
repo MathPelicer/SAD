@@ -8,10 +8,6 @@ type_specifier
 identifier
 	: id
 
-declaration
-	: type_specifier identifier "\n"
-	| (empty)
-
 ##################################################
 decidir como vai ficar parameter_list
 ##################################################
@@ -36,14 +32,13 @@ statement_list
 
 statement
 	: variable "=" expression
-	
-	# possivelmente statements vao virar statement_lists
-
-	| "if" expression "{" statement_list "}" 
-	| "if" expression "{" statement_list "}" "elif" "{" statement_list "}"
-	| "if" expression "{" statement_list "}" "elif" "{" statement_list "}" "else" "{" statement_list "}"
+	| "what" expression "{" statement_list "}" 
+	| "what" expression "{" statement_list "}" "everwhat" "{" statement_list "}"
+	| "what" expression "{" statement_list "}" "everwhat" "{" statement_list "}" "ever" "{" statement_list "}"
+	| "what" expression "{" statement_list "}" "ever" "{" statement_list "}"
 	| "while" expression "{" statement_list "}"
-	| "while" expression "{" statement_list choke"}"
+	| "while" expression "{" statement_list "choke" "}"
+	| (empty)
 
 expression
 	: simple_expression
