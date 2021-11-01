@@ -350,9 +350,12 @@ class Interpreter(object):
 
     # nao sei exatamente como funciona retornar nada
     def optional_statements(self):
-        statement_list_result = self.statement_list()
 
-        return statement_list_result
+        statement_list_result = self.statement_list()
+        if statement_list_result == 'invalid':
+            return 'invalid'
+            
+        return 'valid'
 
     def parameter_list(self):
         parameter_result = ""
@@ -390,12 +393,18 @@ class Interpreter(object):
                 else:
                     return 'invalid'
 
-def main():
-    statement = input('calc -> ')
+def readfile():
+    code_file = open('code_files\\test_sad_cod.txt', 'r')
+    code_string = code_file.read()
+    print(code_string)
+    return code_string
 
+def main():
+    #statement = input('calc -> ')
+    statement = readfile()
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.arguments()
+    result = interpreter.optional_statements()
     print(result)
 
 if __name__ == '__main__':
