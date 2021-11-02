@@ -1,14 +1,21 @@
-myHumps = 10
-yourHumps = 0
+brokenVariable = 1
+damagedVariable = 3
+goodVariable = 6
+greatVariable = 8
+legendaryVariable = 10
 
-what myHumps > yourHumps{
-  humpsShowdown = "my humps is better than yours"
-  x =20
+what damageVariable + goodVariable >= legendaryVariable{
+  printingVariable = "ha ha, sucks to be u"
+}
+everwhat legendaryVariable - greatVariable == brokenVariable{
+  printingVariable = "you are weak it falta you poder"
+}
+everwhat legendaryVariable < 3 * damagedVariable{
+  printingVariable = "the sugar uniao makes the strength"
 }
 ever{
-  humpsShowdown = "it was rigged my humps are better than yours"
+  printingVariable = "i declare the legendary Variable even legendary"
+  legendaryVariable = legendaryVariable + 1
 }
 
-life x >y {
-    x=9
-}
+printingVariable = "wish i could comment this line"

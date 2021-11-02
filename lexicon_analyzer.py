@@ -100,7 +100,7 @@ class LexiconAnalayzer(object):
                 ('INTEGER',  r'\d+'),         # int number
                 ('CAMUS',    r'coffee|suicide'), #true / false
                 ('FLOAT',    r'\d+(\.\d*)?'), # float number
-                ('STRING',   r'\"[a-z ]+\"'),  # string always using double quotes
+                ('STRING',   r'\"[a-z ,]+\"'),  # string always using double quotes
                 ('CHAR',     r'\'[a-z]+\''),  # char always using sigle quotes
                 ('ID',       r'[A-Za-z]+'),   # Identifiers
                 ('PLUS',     r'\+'),          # plus op +
