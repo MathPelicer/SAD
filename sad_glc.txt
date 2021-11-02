@@ -8,20 +8,6 @@ type_specifier
 identifier
 	: id
 
-##################################################
-decidir como vai ficar parameter_list
-##################################################
-
-parameter_list
-	: identifier
-	| parameter_list "," identifier
-
-parameter_list
-	: type_specifier identifier
-	| parameter_list "," type_specifier identifier
-	
-##################################################
-
 optional_statements
 	: statement_list
 	| (empty)
@@ -37,12 +23,17 @@ statement
 	| "what" expression "{" statement_list "}" "everwhat" "{" statement_list "}" "ever" "{" statement_list "}"
 	| "what" expression "{" statement_list "}" "ever" "{" statement_list "}"
 	| "while" expression "{" statement_list "}"
-	| "while" expression "{" statement_list "choke" "}"
+	| "while" expression "{" statement_list "}"
 	| (empty)
 
 expression
 	: simple_expression
-	| simple_expression {comparison} simple_expression
+	| simple_expression "==" simple_expression
+	| simple_expression "!=" simple_expression
+	| simple_expression ">" simple_expression
+	| simple_expression "<" simple_expression
+	| simple_expression ">=" simple_expression
+	| simple_expression "<=" simple_expression
 
 simple_expression
 	: term

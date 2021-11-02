@@ -84,17 +84,17 @@ class LexiconAnalayzer(object):
         token_specification = [
                 #('DEATH',    r'death'),       # function declaration
                 #('BREATH',   r'breath'),      # for
-                ('LIFE',     r'life'),        # while
-                ('CHOKE',    r'choke'),       # break
+                #('LIFE',     r'life'),        # while
+                #('CHOKE',    r'choke'),       # break
                 ('WHAT',     r'what'),        # if
                 ('EVERWHAT', r'everwhat'),    # elif
                 ('EVER',     r'ever'),        # else
                 #('HAPPY',    r'happy'),       # switch
                 #('TREE',     r'tree'),        # case
                 #('ACCIDENT', r'accident'),    # default
-                ('COMMA',    r','),
-                ('OPEN_P',   r'\('),
-                ('CLOSE_P',  r'\)'),
+                #('COMMA',    r','),
+                #('OPEN_P',   r'\('),
+                #('CLOSE_P',  r'\)'),
                 ('OPEN_B',   r'{'),
                 ('CLOSE_B',  r'}'),
                 ('INTEGER',  r'\d+'),         # int number
