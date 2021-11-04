@@ -300,31 +300,31 @@ class Interpreter(object):
                     else:
                         return "invalid"
 
-                    if self.current_token.type == 'EVERWHAT':
-                        self.eat('EVERWHAT')
-                        self.expression()
+                    # if self.current_token.type == 'EVERWHAT':
+                    #     self.eat('EVERWHAT')
+                    #     self.expression()
 
-                        if self.current_token.type == 'ENDLINE':
-                            self.eat('ENDLINE')
+                    #     if self.current_token.type == 'ENDLINE':
+                    #         self.eat('ENDLINE')
 
-                        elif self.current_token.type == 'OPEN_B':
-                            self.eat('OPEN_B')
+                    #     elif self.current_token.type == 'OPEN_B':
+                    #         self.eat('OPEN_B')
 
-                            if self.current_token.type == 'ENDLINE':
-                                self.eat('ENDLINE')
+                    #         if self.current_token.type == 'ENDLINE':
+                    #             self.eat('ENDLINE')
 
-                            statement = self.statement_list()
+                    #         statement = self.statement_list()
 
-                            if statement == 'invalid':
-                                return 'invalid'
+                    #         if statement == 'invalid':
+                    #             return 'invalid'
 
-                            elif self.current_token.type == 'CLOSE_B':
-                                self.eat('CLOSE_B')
+                    #         elif self.current_token.type == 'CLOSE_B':
+                    #             self.eat('CLOSE_B')
 
-                            else:
-                                return "invalid"
+                    #         else:
+                    #             return "invalid"
                     
-                    elif self.current_token.type == 'ENDLINE':
+                    if self.current_token.type == 'ENDLINE':
                             self.eat('ENDLINE')
 
                     if self.current_token.type == 'EVER':
@@ -335,48 +335,19 @@ class Interpreter(object):
 
                         elif self.current_token.type == 'OPEN_B':
                             self.eat('OPEN_B')
+
                             statement = self.statement_list()
 
-                            if self.current_token.type == 'ENDLINE':
-                                self.eat('ENDLINE')
-
-                            elif statement == 'invalid':
+                            if statement == 'invalid':
                                 return 'invalid'
-
-                            elif self.current_token.type == 'CLOSE_B':
+                                
+                            if self.current_token.type == 'CLOSE_B':
                                 self.eat('CLOSE_B')
-
                             else:
                                 return "invalid"
 
                 else:
                     return 'invalid'
-
-            elif self.current_token.type == 'LIFE':
-                self.eat('LIFE')
-                self.expression()
-
-                if self.current_token.type == 'ENDLINE':
-                    self.eat('ENDLINE')
-
-                elif self.current_token.type == 'OPEN_B':
-                    self.eat('OPEN_B')
-                    statement = self.statement_list()
-
-                    if statement == 'invalid':
-                        return 'invalid'
-
-                    if self.current_token.type == 'ENDLINE':
-                        self.eat('ENDLINE')
-
-                    elif self.current_token.type == 'CHOKE':
-                        self.eat('CHOKE')
-
-                    elif self.current_token.type == 'CLOSE_B':
-                        self.eat('CLOSE_B')
-
-                    else:
-                        return 'invalid'
 
             elif statement_result == 'invalid':
                 return 'invalid'

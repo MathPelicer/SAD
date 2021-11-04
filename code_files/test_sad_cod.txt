@@ -7,14 +7,8 @@ legendaryVariable = 10
 what damageVariable + goodVariable >= legendaryVariable{
   printingVariable = "ha ha, sucks to be u"
 }
-everwhat legendaryVariable - greatVariable == brokenVariable{
-  printingVariable = "you are weak it falta you poder"
-}
-everwhat legendaryVariable < 3 * damagedVariable{
-  printingVariable = "the sugar uniao makes the strength"
-}
 ever{
-  printingVariable = "i declare the legendary Variable even legendary"
+  printingVariable = "i declare the legendary variable even legendary"
   legendaryVariable = legendaryVariable + 1
 }
 
