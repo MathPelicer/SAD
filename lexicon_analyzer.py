@@ -147,6 +147,20 @@ class LexiconAnalayzer(object):
                 raise RuntimeError(f'{value!r} unexpected on line {line_num}')
             yield Token(kind, value)
 
+class AST(object):
+    pass
+
+class BinOp(AST):
+    def __init__(self, left, op, right):
+        self.left = left
+        self.token = self.op = op
+        self.right = right
+
+class Num(AST):
+    def __init__(self, token):
+        self.token = token
+        self.value = token.value
+
 class Interpreter(object):
     def __init__(self, lexer):
         self.lexer = lexer
@@ -171,59 +185,67 @@ class Interpreter(object):
         self.eat(token.type)
 
         if token.type == 'ID':
-            return self.current_token
+            return Num(token)
 
     def factor(self):
         token = self.current_token
         
         if token.type == 'INTEGER':
             self.eat(token.type)
-            return int(token.value)
+            token.value = int(token.value)
+            return Num(token)
+
         elif token.type == 'BREAKDOWN':
             self.eat(token.type)
-            return float(token.value)
-        elif token.type == 'LETTER':
-            self.eat(token.type)
-            return str(token.value) # maybe it's gonna change (char doesnt exist in python)
+            token.value = float(token.value)
+            return Num(token)
+
         elif token.type == 'STRING':
             self.eat(token.type)
-            return str(token.value)
+            token.value = str(token.value)
+            return Num(token)
+
         elif token.type == 'CAMUS':
             self.eat(token.type)
-            return bool(token.value)
+            token.value = bool(token.value)
+            return Num(token)
+
         elif token.type == 'ID':
             return self.identifier()
+
         else:
             return 'invalid'
 
     def term(self):
-        term_result = self.factor()
+        node = self.factor()
 
         while self.current_token.type in ('MULTI', 'DIV'):
             token = self.current_token
             if token.type == 'MULTI':
                 self.eat('MULTI')
-                self.factor()
+
             elif token.type == 'DIV':
-                self.eat('DIV')
-                self.factor()
+                self.eat('DIV')             
+
+            node = BinOp(left=node, op=token, right=self.factor())
         
-        return term_result
+        return node
 
     def simple_expression(self):
 
-        simple_expression_result = self.term()
+        node = self.term()
 
         while self.current_token.type in ('PLUS', 'MINUS'):
             token = self.current_token
             if token.type == 'PLUS':
                 self.eat('PLUS')
-                self.factor()
+
             elif token.type == 'MINUS':
                 self.eat('MINUS')
-                self.factor()
+
+            node = BinOp(left=node, op=token, right=self.term())
         
-        return simple_expression_result
+        return node
     
     def expression(self):
 
@@ -418,7 +440,7 @@ class Interpreter(object):
     #                 return 'invalid'
 
 def readfile():
-    code_file = open('code_files\\test_sad_cod.txt', 'r')
+    code_file = open('code_files\\test_ast.txt', 'r')
     code_string = code_file.read()
 
     print(code_string)
@@ -429,7 +451,7 @@ def main():
     statement = readfile()
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.optional_statements()
+    result = interpreter.simple_expression()
     print(result)
 
 if __name__ == '__main__':
