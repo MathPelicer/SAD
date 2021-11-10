@@ -63,11 +63,11 @@ import re
 #         self.scope = scope
 
 
-from typing import NamedTuple
+from typing import NamedTuple, Union
 
 class Token(NamedTuple):
     type: str
-    value: str
+    value: Union[int, float, str]
 
 
 #criar classe do Analisador Léxico
@@ -150,6 +150,24 @@ class LexiconAnalayzer(object):
 class AST(object):
     pass
 
+class op_StatOp(AST):
+    def __init__(self, left, space, right):
+        self.left = left
+        self.token = self.space = space
+        self.right = right
+
+class StatOp(AST):
+    def __init__(self, left, exp, right):
+        self.left = left
+        self.token = self.exp = exp
+        self.right = right
+
+class CompOp(AST):
+    def __init__(self, left, comp, right):
+        self.left = left
+        self.token = self.comp = comp
+        self.right = right
+
 class BinOp(AST):
     def __init__(self, left, op, right):
         self.left = left
@@ -192,7 +210,7 @@ class Interpreter(object):
         
         if token.type == 'INTEGER':
             self.eat(token.type)
-            token.value = int(token.value)
+            token._replace(value = int(token.value)) 
             return Num(token)
 
         elif token.type == 'BREAKDOWN':
@@ -249,78 +267,88 @@ class Interpreter(object):
     
     def expression(self):
 
-        expression_result = self.simple_expression()
+        node = self.simple_expression()
 
         while self.current_token.type in ('EQUALS', 'DIFF', 'GREATER', 'LESS', 'GTR_THAN', 'LESS_THAN'):
-            if self.current_token.type == 'EQUALS':
+            token = self.current_token
+            if token.type == 'EQUALS':
                 self.eat('EQUALS')
                 # ISSO SIM SINTATICO SEM EXECUÇÃO
-                self.simple_expression()
-            elif self.current_token.type == 'DIFF':
+                #self.simple_expression()
+            elif token.type == 'DIFF':
                 self.eat('DIFF')
-                self.simple_expression()
-            elif self.current_token.type == 'GREATER':
+                #self.simple_expression()
+            elif token.type == 'GREATER':
                 self.eat('GREATER')
-                self.simple_expression()
-            elif self.current_token.type == 'LESS':
+                #self.simple_expression()
+            elif token.type == 'LESS':
                 self.eat('LESS')
-                self.simple_expression()
-            elif self.current_token.type == 'GTR_THAN':
+                #self.simple_expression()
+            elif token.type == 'GTR_THAN':
                 self.eat('GTR_THAN')
-                self.simple_expression()
-            elif self.current_token.type == 'LESS_THAN':
+                #self.simple_expression()
+            elif token.type == 'LESS_THAN':
                 self.eat('LESS_THAN')
-                self.simple_expression()
+                #self.simple_expression()
             else:
                 return 'invalid'
+
+            node = CompOp(left=node, comp=token.type, right=self.simple_expression())
         
-        return expression_result
+        return node
 
     def statement(self):
         statement_result = ""
 
         while self.current_token.type in ('ID', 'WHAT', 'EVERWHAT', 'EVER', 'LIFE', 'ENDLINE'):
+            token = self.current_token
 
-            if self.current_token.type == 'ID':
-                self.identifier()
+            if token.type == 'ID':
+                node = self.identifier()
 
-                if self.current_token.type == 'ASSIGN':
+                token = self.current_token
+                if token.type == 'ASSIGN':
                     self.eat('ASSIGN')
-                    expression_result = self.expression()
+                    #expression_result = self.expression()
 
-                    if expression_result == 'invalid':
-                        return 'invalid'
+                    # if expression_result == 'invalid':
+                    #     return 'invalid'
 
-                    if self.current_token.type == 'ID':
-                        return 'invalid'
+                    # if self.current_token.type == 'ID':
+                    #     return 'invalid'
 
                 else:
                     return 'invalid'
 
-                return statement_result
+                node = StatOp(left=node, exp=token.type, right=self.expression())
+                return node
 
-            elif self.current_token.type == 'WHAT':
+            elif token.type == 'WHAT':
                 self.eat('WHAT')
-                self.expression()
+                what_token = 'WHAT'
+
+                node = self.expression()
+
+                # if self.current_token.type == 'ENDLINE':
+                #     self.eat('ENDLINE')
+
+                # elif self.current_token.type == 'OPEN_B':
+                self.eat('OPEN_B')
+                right_node = self.statement_list()
 
                 if self.current_token.type == 'ENDLINE':
                     self.eat('ENDLINE')
 
-                elif self.current_token.type == 'OPEN_B':
-                    self.eat('OPEN_B')
-                    statement = self.statement_list()
+                # elif statement == 'invalid':
+                #     return 'invalid'
 
-                    if self.current_token.type == 'ENDLINE':
-                        self.eat('ENDLINE')
+                self.eat('CLOSE_B')
 
-                    elif statement == 'invalid':
-                        return 'invalid'
+                # else:
+                #     return "invalid"
 
-                    elif self.current_token.type == 'CLOSE_B':
-                        self.eat('CLOSE_B')
-
-                    else:
-                        return "invalid"
+                node = StatOp(left=what_token, exp=node, right=right_node)
+                return node
 
                     # if self.current_token.type == 'EVERWHAT':
                     #     self.eat('EVERWHAT')
@@ -346,8 +374,8 @@ class Interpreter(object):
                     #         else:
                     #             return "invalid"
                     
-                    if self.current_token.type == 'ENDLINE':
-                            self.eat('ENDLINE')
+                if self.current_token.type == 'ENDLINE':
+                    self.eat('ENDLINE')
 
                     if self.current_token.type == 'EVER':
                         self.eat('EVER')
@@ -451,7 +479,7 @@ def main():
     statement = readfile()
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.simple_expression()
+    result = interpreter.statement()
     print(result)
 
 if __name__ == '__main__':
