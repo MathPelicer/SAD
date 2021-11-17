@@ -150,6 +150,13 @@ class LexiconAnalayzer(object):
 class AST(object):
     pass
 
+
+class StatList(AST):
+    def __init__(self, left, endline, right):
+        self.left = left
+        self.token = self.endline = endline
+        self.right = right
+
 class op_StatOp(AST):
     def __init__(self, left, space, right):
         self.left = left
@@ -298,9 +305,9 @@ class Interpreter(object):
         return node
 
     def statement(self):
-        statement_result = ""
+        #statement_result = ""
 
-        while self.current_token.type in ('ID', 'WHAT', 'EVERWHAT', 'EVER', 'LIFE', 'ENDLINE'):
+        while self.current_token.type in ('ID', 'WHAT', 'EVER', 'ENDLINE'):
             token = self.current_token
 
             if token.type == 'ID':
@@ -350,81 +357,51 @@ class Interpreter(object):
                 node = StatOp(left=what_token, exp=node, right=right_node)
                 return node
 
-                    # if self.current_token.type == 'EVERWHAT':
-                    #     self.eat('EVERWHAT')
-                    #     self.expression()
+            elif self.current_token.type == 'EVER':
+                self.eat('EVER')
+                ever_token = 'EVER'
 
-                    #     if self.current_token.type == 'ENDLINE':
-                    #         self.eat('ENDLINE')
+                node = self.expression()
+                # if self.current_token.type == 'ENDLINE':
+                #     self.eat('ENDLINE')
 
-                    #     elif self.current_token.type == 'OPEN_B':
-                    #         self.eat('OPEN_B')
+                self.eat('OPEN_B')
 
-                    #         if self.current_token.type == 'ENDLINE':
-                    #             self.eat('ENDLINE')
-
-                    #         statement = self.statement_list()
-
-                    #         if statement == 'invalid':
-                    #             return 'invalid'
-
-                    #         elif self.current_token.type == 'CLOSE_B':
-                    #             self.eat('CLOSE_B')
-
-                    #         else:
-                    #             return "invalid"
-                    
-                if self.current_token.type == 'ENDLINE':
-                    self.eat('ENDLINE')
-
-                    if self.current_token.type == 'EVER':
-                        self.eat('EVER')
-
-                        if self.current_token.type == 'ENDLINE':
-                            self.eat('ENDLINE')
-
-                        elif self.current_token.type == 'OPEN_B':
-                            self.eat('OPEN_B')
-
-                            statement = self.statement_list()
-
-                            if statement == 'invalid':
-                                return 'invalid'
+                right_node = self.statement_list()
                                 
-                            if self.current_token.type == 'CLOSE_B':
-                                self.eat('CLOSE_B')
-                            else:
-                                return "invalid"
+                self.eat('CLOSE_B')
 
-                else:
-                    return 'invalid'
+                node = StatOp(left=ever_token, exp=node, right=right_node)
+                return node
 
-            elif statement_result == 'invalid':
-                return 'invalid'
-
-            elif self.current_token == 'ENDLINE':
+            elif token.type == 'ENDLINE':
                 self.eat('ENDLINE')
 
-            return 'valid'
-        return ''        
+            # elif statement_result == 'invalid':
+            #     return 'invalid'
+
+        return StatOp(left=None, exp=None, right=None)        
 
     def statement_list(self):
-        statement_list_result = self.statement()
+        node = self.statement()
 
         while self.current_token.type in ('ENDLINE'):
-            if self.current_token.type == 'ENDLINE':
+            token = self.current_token
+
+            if token.type == 'ENDLINE':
                 self.eat('ENDLINE')
-                statement_result = self.statement()
-                if statement_result == 'invalid':
-                    return 'invalid' 
-            else:
-                return 'invalid'
+                endline_token = 'ENDLINE'
 
-        return statement_list_result
+                right_node = self.statement()
+                return StatList(left=node, endline=endline_token, right=right_node)
+                
+        return None
 
+    def parse(self):
+        return self.statement_list()
     # nao sei exatamente como funciona retornar nada
     def optional_statements(self):
-
+        
         statement_list_result = self.statement_list()
         if statement_list_result == 'invalid':
             return 'invalid'
@@ -467,6 +444,14 @@ class Interpreter(object):
     #             else:
     #                 return 'invalid'
 
+class Interpreter_2(object):
+    def __init__(self, parser):
+        self.parser = parser
+
+    def interpret(self):
+        tree = self.parser.parse()
+        return tree
+
 def readfile():
     code_file = open('code_files\\test_ast.txt', 'r')
     code_string = code_file.read()
@@ -479,7 +464,7 @@ def main():
     statement = readfile()
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
-    result = interpreter.statement()
+    result = Interpreter_2(interpreter).interpret()
     print(result)
 
 if __name__ == '__main__':
