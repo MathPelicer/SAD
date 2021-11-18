@@ -431,10 +431,17 @@ class Interpreter_2(object):
         return None
 
     def visit_BinOp(self, node):
-        return None
-
+        if node.op.type == 'PLUS':
+            return self.visit(node.left) + self.visit(node.right)
+        elif node.op.type == 'MINUS':
+            return self.visit(node.left) - self.visit(node.right)
+        elif node.op.type == 'MULTI':
+            return self.visit(node.left) - self.visit(node.right)
+        elif node.op.type == 'DIV':
+            return self.visit(node.left) - self.visit(node.right)
+        
     def visit_Num(self, node):
-        return None
+        return node.value
 
     def interpret(self):
         tree = self.parser.parse()
