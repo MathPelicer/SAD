@@ -351,9 +351,6 @@ class Interpreter(object):
 
                 self.eat('CLOSE_B')
 
-                # else:
-                #     return "invalid"
-
                 node = StatOp(left=what_token, exp=node, right=right_node)
                 return node
 
@@ -399,7 +396,7 @@ class Interpreter(object):
 
     def parse(self):
         return self.statement_list()
-    # nao sei exatamente como funciona retornar nada
+
     def optional_statements(self):
         
         statement_list_result = self.statement_list()
@@ -407,42 +404,6 @@ class Interpreter(object):
             return 'invalid'
 
         return 'valid'
-
-    # def parameter_list(self):
-    #     parameter_result = ""
-
-    #     while self.current_token.type in ('ID'):
-    #         if self.current_token.type == 'ID':
-    #             self.identifier()
-    #             if self.current_token.type == 'COMMA':
-    #                 self.eat('COMMA')
-    #                 parameter_result = self.parameter_list()
-
-    #                 if parameter_result == 'invalid':
-    #                     return 'invalid'
-    #             else:
-    #                 return 'valid'
-        
-    #         return 'valid'
-    #     return 'invalid'
-
-    # def arguments(self):
-    #     arguments_result = ""
-
-    #     while self.current_token.type in ('OPEN_P'):
-    #         if self.current_token.type == 'OPEN_P':
-    #             self.eat('OPEN_P')
-    #             arguments_result = self.parameter_list()
-                
-    #             if arguments_result == 'invalid':
-    #                 return 'invalid'
-
-    #             elif self.current_token.type == 'CLOSE_P':
-    #                 self.eat('CLOSE_P')
-    #                 return 'valid'
-
-    #             else:
-    #                 return 'invalid'
 
 class Interpreter_2(object):
     def __init__(self, parser):
