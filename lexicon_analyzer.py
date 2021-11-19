@@ -300,7 +300,7 @@ class Interpreter(object):
             else:
                 return 'invalid'
 
-            node = CompOp(left=node, comp=token.type, right=self.simple_expression())
+            node = CompOp(left=node, comp=token, right=self.simple_expression())
         
         return node
 
@@ -327,7 +327,7 @@ class Interpreter(object):
                 else:
                     return 'invalid'
 
-                node = StatOp(left=node, exp=token.type, right=self.expression())
+                node = StatOp(left=node, exp=token, right=self.expression())
                 return node
 
             elif token.type == 'WHAT':
@@ -392,10 +392,10 @@ class Interpreter(object):
                 right_node = self.statement()
                 return StatList(left=node, endline=endline_token, right=right_node)
                 
-        return None
+        return node
 
     def parse(self):
-        return self.statement_list()
+        return self.expression()
 
     def optional_statements(self):
         
@@ -414,21 +414,36 @@ class NodeVisitor(object):
     def generic_visit(self, node):
         raise Exception('No visit_{} method'.format(type(node).__name__))
 
-class Interpreter_2(object):
+class Interpreter_2(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
 
-    def visit_StatList(self, node):
-        return None
+    # def visit_StatList(self, node):
+    #     return None
 
-    def visit_opStatOp(self, node):
-        return None
+    # def visit_opStatOp(self, node):
+    #     return None
 
     def visit_statOp(self, node):
-        return None
+        if node.exp.type == '=':
+            left = self.visit(node.left)
+            right = self.visit(node.right)
+            
+            return 
 
     def visit_CompOp(self, node):
-        return None
+        if node.comp.type == 'EQUALS':
+            return self.visit(node.left) == self.visit(node.right)
+        elif node.comp.type == 'DIFF':
+            return self.visit(node.left) != self.visit(node.right)
+        elif node.comp.type == 'GREATER':
+            return self.visit(node.left) != self.visit(node.right)
+        elif node.comp.type == 'LESS':
+            return self.visit(node.left) != self.visit(node.right)
+        elif node.comp.type == 'GTR_THAN':
+            return self.visit(node.left) != self.visit(node.right)
+        elif node.comp.type == 'LESS_THAN':
+            return self.visit(node.left) != self.visit(node.right)
 
     def visit_BinOp(self, node):
         if node.op.type == 'PLUS':
@@ -445,10 +460,10 @@ class Interpreter_2(object):
 
     def interpret(self):
         tree = self.parser.parse()
-        return tree
+        return self.visit(tree)
 
 def readfile():
-    code_file = open('code_files\\test_ast.txt', 'r')
+    code_file = open('code_files\\test_visitor.txt', 'r')
     code_string = code_file.read()
 
     print(code_string)
