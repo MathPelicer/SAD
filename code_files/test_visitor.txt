@@ -1,10 +1,11 @@
 brokenVariable = 1
 damagedVariable = 3
 goodVariable = 6
+greatVariable = 8
+legendaryVariable = 10
 
-what damageVariable + goodVariable >= legendaryVariable{
+what damagedVariable + goodVariable >= legendaryVariable{
   printingVariable = "ha ha, sucks to be u"
-  legendaryVariable = legendaryVariable + 1
 }
 ever{
   printingVariable = "i declare the legendary variable even legendary"

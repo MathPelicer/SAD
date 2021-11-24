@@ -10,6 +10,7 @@ identifier
 
 optional_statements
 	: statement_list
+	| optional_statements
 	| (empty)
 
 statement_list
@@ -19,11 +20,7 @@ statement_list
 statement
 	: variable "=" expression
 	| "what" expression "{" statement_list "}" 
-	| "what" expression "{" statement_list "}" "everwhat" "{" statement_list "}"
-	| "what" expression "{" statement_list "}" "everwhat" "{" statement_list "}" "ever" "{" statement_list "}"
 	| "what" expression "{" statement_list "}" "ever" "{" statement_list "}"
-	| "while" expression "{" statement_list "}"
-	| "while" expression "{" statement_list "}"
 	| (empty)
 
 expression

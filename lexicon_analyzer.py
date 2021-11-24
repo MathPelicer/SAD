@@ -55,6 +55,7 @@
 #criar classe Symbol
 
 import re
+import pickle
 
 # class Symbol:
 #     def __init__(self, name, type, scope):
@@ -400,7 +401,6 @@ class Interpreter(object):
     def optional_statements(self):
         
         left_node = self.statement_list()
-        print(left_node)
 
         if not isinstance(left_node, StatOp) and not left_node.right.exp == None:    
             return op_StatOp(left=left_node, space='ENDLINE', right=self.optional_statements())
@@ -526,16 +526,22 @@ class Interpreter_2(NodeVisitor):
     def interpret(self):
         tree = self.parser.parse()
         python_code = self.visit(tree)
-        print(python_code)
-        return self.python_code
+        #print(python_code)
+        return python_code
 
 
 def readfile():
     code_file = open('code_files\\test_visitor.txt', 'r')
     code_string = code_file.read()
 
-    print(code_string)
+    #print(code_string)
     return code_string
+
+def write_file(python_code):
+    with open('code_files\\python_code_file.py', 'w') as code_file:
+        code_file.write(python_code)
+
+    code_file.close()
 
 def main():
     #statement = input('calc -> ')
@@ -543,7 +549,10 @@ def main():
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
     result = Interpreter_2(interpreter).interpret()
-    print(result.replace("None", ""))
+    python_code = result.replace("None", "")
+    print("\n\n\n")
+    #print(python_code)
+    write_file(python_code)
 
 if __name__ == '__main__':
     main()
