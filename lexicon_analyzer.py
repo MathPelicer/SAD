@@ -67,7 +67,7 @@ from typing import NamedTuple, Union
 
 class Token(NamedTuple):
     type: str
-    value: Union[int, float, str]
+    value: Union[int, float, str, bool]
 
 
 #criar classe do Analisador Léxico
@@ -222,17 +222,17 @@ class Interpreter(object):
 
         elif token.type == 'BREAKDOWN':
             self.eat(token.type)
-            token.value = float(token.value)
+            token._replace(value = float(token.value)) 
             return Num(token)
 
         elif token.type == 'STRING':
             self.eat(token.type)
-            token.value = str(token.value)
+            token._replace(value = str(token.value)) 
             return Num(token)
 
         elif token.type == 'CAMUS':
             self.eat(token.type)
-            token.value = bool(token.value)
+            token._replace(value = bool(token.value)) 
             return Num(token)
 
         elif token.type == 'ID':
@@ -364,7 +364,7 @@ class Interpreter(object):
 
                 self.eat('OPEN_B')
 
-                right_node = self.statement_list()
+                right_node = self.optional_statements()
                                 
                 self.eat('CLOSE_B')
 
@@ -395,17 +395,23 @@ class Interpreter(object):
         return node
 
     def parse(self):
-        return self.expression()
+        return self.optional_statements()
 
     def optional_statements(self):
         
-        statement_list_result = self.statement_list()
-        if statement_list_result == 'invalid':
-            return 'invalid'
+        left_node = self.statement_list()
+        print(left_node)
 
-        return 'valid'
+        if not isinstance(left_node, StatOp) and not left_node.right.exp == None:    
+            return op_StatOp(left=left_node, space='ENDLINE', right=self.optional_statements())
+        else:
+            return op_StatOp(left=left_node, space='ENDLINE', right=self.statement_list())
+
+
 
 class NodeVisitor(object):
+    python_code = ""
+
     def visit(self, node):
         method_name = 'visit_' + type(node).__name__
         visitor = getattr(self, method_name, self.generic_visit)
@@ -418,49 +424,111 @@ class Interpreter_2(NodeVisitor):
     def __init__(self, parser):
         self.parser = parser
 
-    # def visit_StatList(self, node):
-    #     return None
+    def visit_StatList(self, node):
+        python_code = ""
 
-    # def visit_opStatOp(self, node):
-    #     return None
+        if node.endline == 'ENDLINE':
+            left_exp = self.visit(node.left)
+            right_exp = self.visit(node.right)
+            python_code += str(left_exp) + str(right_exp)
 
-    def visit_statOp(self, node):
-        if node.exp.type == '=':
-            left = self.visit(node.left)
-            right = self.visit(node.right)
+        return python_code
+
+    def visit_op_StatOp(self, node):
+        python_code = ""
+        left_exp = self.visit(node.left)
+        python_code += str(left_exp)
+
+        if node.right != None:
+            right_exp = self.visit(node.right)
+            python_code += str(right_exp)
+
+        return python_code
+
+    def visit_StatOp(self, node):
+        left_var = node.left
+        python_code = ""
+
+        if left_var == 'WHAT':
+            comparisson_text = self.visit(node.exp)
+
+            statements_text = self.visit(node.right)
+            split_statement = statements_text.split("\n")
+
+            tabbed_text = ""
+            for i in split_statement:
+                if i:
+                    tabbed_text += "\n\t" + i
+
+            python_code += "if " + str(comparisson_text) + ":" + str(tabbed_text) + "\n"
+
+        
+        elif left_var == 'EVER':
+            statements_text = self.visit(node.right)
+            split_statement = statements_text.split("\n")
+
+            tabbed_text = ""
+            for i in split_statement:
+                if i:
+                    tabbed_text += "\n\t" + i
+
+            python_code += "else" + ":" + str(tabbed_text) + "\n"
+
+ 
+        elif node.exp == None:
+            return python_code
+
+        elif node.exp.type == 'ASSIGN':
             
-            return 
+            var = self.visit(node.left)
+            var_value = self.visit(node.right)
+
+            python_code += str(var) + "=" + str(var_value) + "\n"
+
+        return python_code
+            
 
     def visit_CompOp(self, node):
+        python_code = ""
+
         if node.comp.type == 'EQUALS':
-            return self.visit(node.left) == self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "==" + str(self.visit(node.right))
         elif node.comp.type == 'DIFF':
-            return self.visit(node.left) != self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "!=" + str(self.visit(node.right))
         elif node.comp.type == 'GREATER':
-            return self.visit(node.left) != self.visit(node.right)
+            python_code += str(self.visit(node.left)) + ">" + str(self.visit(node.right))
         elif node.comp.type == 'LESS':
-            return self.visit(node.left) != self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "<" + str(self.visit(node.right))
         elif node.comp.type == 'GTR_THAN':
-            return self.visit(node.left) != self.visit(node.right)
+            python_code += str(self.visit(node.left)) + ">=" + str(self.visit(node.right))
         elif node.comp.type == 'LESS_THAN':
-            return self.visit(node.left) != self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "<=" + str(self.visit(node.right))
+
+        return python_code
 
     def visit_BinOp(self, node):
+        python_code = ""
+
         if node.op.type == 'PLUS':
-            return self.visit(node.left) + self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "+" + str(self.visit(node.right))
         elif node.op.type == 'MINUS':
-            return self.visit(node.left) - self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "-" + str(self.visit(node.right))
         elif node.op.type == 'MULTI':
-            return self.visit(node.left) - self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "*" + str(self.visit(node.right))
         elif node.op.type == 'DIV':
-            return self.visit(node.left) - self.visit(node.right)
+            python_code += str(self.visit(node.left)) + "/" + str(self.visit(node.right))
+
+        return python_code
         
     def visit_Num(self, node):
         return node.value
 
     def interpret(self):
         tree = self.parser.parse()
-        return self.visit(tree)
+        python_code = self.visit(tree)
+        print(python_code)
+        return self.python_code
+
 
 def readfile():
     code_file = open('code_files\\test_visitor.txt', 'r')
@@ -475,7 +543,7 @@ def main():
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
     result = Interpreter_2(interpreter).interpret()
-    print(result)
+    print(result.replace("None", ""))
 
 if __name__ == '__main__':
     main()

@@ -1,1 +1,14 @@
-5 == 6
+brokenVariable = 1
+damagedVariable = 3
+goodVariable = 6
+
+what damageVariable + goodVariable >= legendaryVariable{
+  printingVariable = "ha ha, sucks to be u"
+  legendaryVariable = legendaryVariable + 1
+}
+ever{
+  printingVariable = "i declare the legendary variable even legendary"
+  legendaryVariable = legendaryVariable + 1
+}
+
+printingVariable = "wish i could comment this line"
