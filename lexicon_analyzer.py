@@ -521,7 +521,12 @@ class Interpreter_2(NodeVisitor):
         return python_code
         
     def visit_Num(self, node):
-        return node.value
+        if node.value == 'coffee':
+            return str("False")
+        elif node.value == 'suicide':
+            return str("True")
+        else:
+            return node.value
 
     def interpret(self):
         tree = self.parser.parse()
@@ -550,7 +555,6 @@ def main():
     interpreter = Interpreter(analyser)
     result = Interpreter_2(interpreter).interpret()
     python_code = result.replace("None", "")
-    print("\n\n\n")
     #print(python_code)
     write_file(python_code)
 

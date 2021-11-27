@@ -3,6 +3,7 @@ damagedVariable = 3
 goodVariable = 6
 greatVariable = 8
 legendaryVariable = 10
+theTruth = coffee
 
 what damagedVariable + goodVariable >= legendaryVariable{
   printingVariable = "ha ha, sucks to be u"
