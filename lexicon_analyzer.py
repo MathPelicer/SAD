@@ -535,28 +535,29 @@ class Interpreter_2(NodeVisitor):
         return python_code
 
 
-def readfile():
-    code_file = open('code_files\\test_visitor.txt', 'r')
+def readfile(filename):
+    code_file = open('code_files\\' + filename +'.txt', 'r')
     code_string = code_file.read()
 
     #print(code_string)
     return code_string
 
-def write_file(python_code):
-    with open('code_files\\python_code_file.py', 'w') as code_file:
+def write_file(python_code, filename):
+    with open('code_files\\' + filename + '.py', 'w') as code_file:
         code_file.write(python_code)
 
     code_file.close()
 
 def main():
-    #statement = input('calc -> ')
-    statement = readfile()
+    input_file = input('filename (input) -> ')
+    output_file = input('filename (output) -> ')
+    statement = readfile(input_file)
     analyser = LexiconAnalayzer(statement)
     interpreter = Interpreter(analyser)
     result = Interpreter_2(interpreter).interpret()
     python_code = result.replace("None", "")
     #print(python_code)
-    write_file(python_code)
+    write_file(python_code, output_file)
 
 if __name__ == '__main__':
     main()
